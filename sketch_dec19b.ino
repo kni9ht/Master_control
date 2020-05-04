@@ -29,7 +29,7 @@ int led = 13;
 
 void setup() {
  BT.begin(9600);
- //Serial.begin(9600);
+ Serial.begin(9600);
   pinMode(MOTOR1,OUTPUT);
 pinMode(MOTOR2,OUTPUT);
 pinMode(MOTOR3,OUTPUT);
@@ -130,10 +130,14 @@ int check_leftRight()
   myservo.write(80);
  if(disleft>disright)
  {
+  digitalWrite(trigPin, LOW);
+  digitalWrite(echoPin, LOW);
      return 0;
  }
  if(disright>disleft)
  {
+  digitalWrite(trigPin, LOW);
+  digitalWrite(echoPin, LOW);
      return 1;
  }
   
@@ -149,6 +153,8 @@ int check_distance()
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distanceCm= duration*0.034/2;
+  digitalWrite(trigPin, LOW);
+  digitalWrite(echoPin, LOW);
   return distanceCm;
 }
 
@@ -169,6 +175,8 @@ void pir()
 
 void loop() 
 {
+  
+start: 
   while (BT.available())
   {  //Check if there is an available byte to read
   delay(10); //Delay added to make thing stable
@@ -178,10 +186,17 @@ void loop()
   if (readvoice.length() > 0) {
    Serial.println(readvoice);
   } 
-  pir();
-  myservo.write(80);
-  val=check_distance();
-   if(val<50)
+
+  
+
+  if(readvoice == "1")
+  {
+    for( ; ; )
+  {
+     readvoice="";
+    Serial.println("i am in auto mode");
+    val=check_distance();
+    if(val<50)
 {
    stand();
    ans=check_leftRight();
@@ -201,7 +216,64 @@ void loop()
    }
    
 }
+else
+{
+  front();
+  myservo.write(80);
+} 
 
+
+    while (BT.available())
+  {  //Check if there is an available byte to read
+  delay(10); //Delay added to make thing stable
+  char c = BT.read(); //Conduct a serial read
+  readvoice += c; //build the string- "forward", "reverse", "left" and "right"
+  } 
+  if (readvoice.length() > 0) {
+   Serial.println(readvoice);
+  } 
+  if(readvoice == "2")
+  {
+    goto start;
+    }
+  }
+  Serial.println("i am leaving auto mode");
+  }
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if(readvoice == "2")
+  {
+for( ; ; )
+  {
+     readvoice="";
+     while (BT.available())
+  {  //Check if there is an available byte to read
+  delay(10); //Delay added to make thing stable
+  char c = BT.read(); //Conduct a serial read
+  readvoice += c; //build the string- "forward", "reverse", "left" and "right"
+  } 
+  if (readvoice.length() > 0) {
+   Serial.println(readvoice);
+  } 
+    Serial.println("i am in manual mode");
+  pir();
+  myservo.write(80);
+  val=check_distance();
 if(readvoice == "*forward#")
   {
    myservo.write(80);
@@ -209,19 +281,6 @@ if(readvoice == "*forward#")
    if(val<50)
 {
    stand();
-   ans=check_leftRight();
-   if(ans==1)
-   {
-     myservo.write(80);
-   left();
-   front();
-   }
-   if(ans==0)
-   {
-     myservo.write(80);
-   right();
-   front();
-   }
 }
 
 else
@@ -245,20 +304,7 @@ else
    if(val<50)
 {
    stand();
-   ans=check_leftRight();
-   if(ans==1)
-   {
-     myservo.write(80);
-   left();
-   front();
    }
-   if(ans==0)
-   {
-     myservo.write(80);
-   right();
-   front();
-   }
-}
 
 else
 {
@@ -275,19 +321,6 @@ else
    if(val<50)
 {
    stand();
-   ans=check_leftRight();
-   if(ans==1)
-   {
-     myservo.write(80);
-   left();
-   front();
-   }
-   if(ans==0)
-   {
-     myservo.write(80);
-   right();
-   front();
-   }
 }
 
 else
@@ -303,7 +336,17 @@ else
    myservo.write(80);
  }
 
-
-readvoice="";
+ else if (val<50)
+ {
+   stand();
+   myservo.write(80);
+ }
+  else if (readvoice == "1")
+ {
+  goto start;
+ }
+  }
+  Serial.println("i am leaving manual mode");
+}
  } //Reset the variable
  
