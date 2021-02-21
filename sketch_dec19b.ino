@@ -240,22 +240,7 @@ else
   Serial.println("i am leaving auto mode");
   }
   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
   if(readvoice == "2")
   {
 for( ; ; )
